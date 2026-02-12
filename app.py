@@ -19,106 +19,111 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 3. 모든 스타일 통합 및 UI 고정 (연회색 배경 + 텍스트 검정)
+# 3. 모든 스타일 통합 (배경 연회색 + 텍스트 검정 + 커스텀 버튼 위치 조정)
 st.markdown("""
     <style>
-        /* [1] 배경색을 흰색에 가까운 연회색으로 변경 및 텍스트 검정 고정 */
+        /* [1] 배경색 및 텍스트 설정 */
         .stApp { 
-            background-color: #F8F9FA !important; /* 세련된 연회색 */
+            background-color: #F8F9FA !important; 
         }
-        
-        /* 모든 일반 텍스트, 제목, 라벨을 검정색으로 강제 */
         .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
 
-        /* [2] 기존 화살표 버튼은 숨김 */
+        /* [2] 기존 기본 화살표는 확실히 제거 */
         button[data-testid="stSidebarCollapseButton"] {
             display: none !important;
+            visibility: hidden !important;
         }
 
-        /* [3] 커스텀 메뉴 버튼 (연회색 배경에서도 잘 보이도록 그림자 유지) */
+        /* [3] 커스텀 메뉴 버튼 (위치를 상단 바 아래인 80px 정도로 내림) */
         #custom-menu-button {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 60px;
-            height: 60px;
+            top: 85px; /* 상단 검은색 바 아래로 내림 */
+            left: 25px;
+            width: 50px;
+            height: 50px;
             background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999999;
+            z-index: 999999;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             border: 2px solid #FFFFFF;
+            transition: all 0.2s ease;
         }
         
+        #custom-menu-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(255, 69, 0, 0.3);
+        }
+
+        /* 화살표 아이콘 (흰색) */
         #custom-menu-button::before {
-            content: '▶'; 
+            content: '☰'; /* 햄버거 메뉴 아이콘으로 변경 (더 직관적) */
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
         }
 
-        /* [4] 사이드바 스타일 (본문보다 살짝 더 짙은 회색으로 구분) */
+        /* 사이드바 스타일 */
         [data-testid="stSidebar"] {
             background-color: #F0F2F6 !important;
             border-right: 1px solid #E0E0E0;
         }
-        [data-testid="stSidebar"] * { color: #000000 !important; }
-
-        /* [5] 지표 카드 및 기타 요소 */
-        [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
-        .search-container { display: flex; justify-content: center; margin-top: 20px; }
         
-        /* 카드형 디자인 배경은 완전 흰색으로 해서 배경(연회색)과 대비 효과 */
-        .gs-card {
-            background: #FFFFFF !important;
-            border: 1px solid #E0E0E0;
-            border-radius: 12px;
-            padding: 22px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        }
+        /* 검색창 및 지표 스타일 */
+        .search-container { display: flex; justify-content: center; margin-top: 50px; }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. [추가] JavaScript를 이용한 버튼 강제 보정 (CSS가 안 먹힐 때를 대비)
+# 4. JavaScript: 상단 바 아래에 버튼 강제 생성
 components.html("""
     <script>
     const doc = window.parent.document;
-    
-    // 0.5초마다 버튼 상태를 체크해서 강제로 스타일을 입힘 (질기게 따라다님)
-    setInterval(() => {
-        const btn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        if (btn) {
-            btn.style.visibility = 'visible';
-            btn.style.opacity = '1';
-            btn.style.display = 'flex';
-            
-            const svg = btn.querySelector('svg');
-            if (svg) {
-                svg.style.fill = 'white';
-                svg.style.stroke = 'white';
-            }
-        }
-    }, 500);
-    </script>
-""", height=0)
 
-# 4. 본문 클릭 시 사이드바 닫기 (강력한 JS)
-components.html("""
-    <script>
-    const doc = window.parent.document;
-    const mainContent = doc.querySelector('.main');
-    mainContent.addEventListener('click', function() {
-        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-        const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
-            closeButton.click();
+    // 버튼 생성 함수
+    function createMenuButton() {
+        if (!doc.getElementById('custom-menu-button')) {
+            const btn = document.createElement('div');
+            btn.id = 'custom-menu-button';
+            btn.title = '메뉴 열기/닫기';
+            
+            btn.onclick = function() {
+                // 스트림릿 내부의 진짜 버튼을 찾아 클릭 이벤트 전달
+                const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
+                if (realBtn) {
+                    realBtn.click();
+                } else {
+                    // 버튼을 못 찾을 경우 사이드바 상태 강제 조작 시도 (보험)
+                    const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+                    if (sidebar) {
+                        const isExpanded = sidebar.getBoundingClientRect().width > 0;
+                        // 스트림릿의 내부 상태와 연동하기 위해 가급적 위 realBtn.click()이 우선입니다.
+                    }
+                }
+            };
+            doc.body.appendChild(btn);
         }
-    }, true);
+    }
+
+    // 초기 실행 및 반복 체크 (사라짐 방지)
+    createMenuButton();
+    setInterval(createMenuButton, 1000);
+
+    // 본문 클릭 시 사이드바 닫기 로직
+    const mainContent = doc.querySelector('.main');
+    if (mainContent) {
+        mainContent.addEventListener('click', function() {
+            const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+            if (sidebar && sidebar.getBoundingClientRect().width > 0) {
+                const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
+                if (realBtn) realBtn.click();
+            }
+        }, true);
+    }
     </script>
 """, height=0)
 
@@ -309,6 +314,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
