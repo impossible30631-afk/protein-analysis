@@ -4,135 +4,126 @@ import numpy as np
 import streamlit.components.v1 as components
 from sqlalchemy import create_engine
 
-# 1. 세션 상태 초기화 및 페이지 설정 (최상단에 위치해야 함)
+화살표가 보이지 않는 문제와 본문 클릭 시 사이드바가 닫히지 않는 문제를 완전히 해결하기 위해 가장 강력한 JavaScript 트리거와 UI 고정 CSS를 결합한 최종 코드를 제시해 드립니다.
+
+이 코드는 화살표를 ReBorn 테마 색상의 플로팅 버튼으로 만들어 시인성을 극대화했고, 본문 클릭 이벤트를 강제로 캡처하여 사이드바를 닫아줍니다.
+
+🚀 ReBorn 플랫폼 최종 통합 코드
+Python
+import streamlit as st
+import pandas as pd
+import numpy as np
+import streamlit.components.v1 as components
+from sqlalchemy import create_engine
+
+# 1. 세션 상태 초기화 및 페이지 설정
 if 'sidebar_state' not in st.session_state:
     st.session_state.sidebar_state = "expanded"
 if 'menu_index' not in st.session_state:
     st.session_state.menu_index = 0
 
-st.set_page_config(page_title="Protein AI Platform", layout="wide", initial_sidebar_state=st.session_state.sidebar_state)
+st.set_page_config(
+    page_title="Protein AI Platform", 
+    layout="wide", 
+    initial_sidebar_state=st.session_state.sidebar_state
+)
 
-# 2. 본문 클릭 시 사이드바 닫기 JavaScript
+# 2. [강력 해결] 본문 클릭 시 사이드바 자동 닫기 JavaScript (더 강력한 트리거)
 components.html("""
     <script>
     const doc = window.parent.document;
-    const body = doc.querySelector('.main');
-    body.addEventListener('click', function() {
+    
+    // 본문 클릭 시 사이드바 닫기 로직
+    const handleSideBar = () => {
+        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
         const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        if (closeButton) {
-            const sidebar = doc.querySelector('[data-testid="stSidebar"]');
-            const isVisible = window.getComputedStyle(sidebar).getPropertyValue('left') === '0px';
-            if (isVisible) {
+        
+        if (sidebar && closeButton) {
+            // 사이드바 너비가 0보다 크면 열려있는 상태로 간주
+            const isExpanded = sidebar.getBoundingClientRect().width > 0;
+            if (isExpanded) {
                 closeButton.click();
             }
         }
-    });
+    };
+
+    // main 영역 클릭 감지
+    const mainContent = doc.querySelector('.main');
+    if (mainContent) {
+        mainContent.addEventListener('click', handleSideBar, true);
+    }
     </script>
 """, height=0)
 
-# 3. DB 연결 정보 및 함수
+# 3. DB 연결 설정
 db_user = "root"
-db_pass = "your_password"  # <-- 실제 비밀번호로 수정하세요
+db_pass = "your_password" 
 db_name = "my-review-db"
 db_host = "34.64.195.191"
 
 def get_db_connection():
-    engine = create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
-    return engine
+    return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 4. 강력한 CSS 주입 (글자색 검정 고정 및 카드 디자인)
+# 4. [강력 해결] 화살표 시인성(그라데이션 버튼) 및 텍스트 검정 고정 CSS
 st.markdown("""
     <style>
- 
-        /* 1. 사이드바 화살표 설정 (먼저 정의) */
-        button[data-testid="stSidebarCollapseButton"] {
-            background: linear-gradient(to right, #FFD700, #FF4500) !important; /* ReBorn 그라데이션 */
-            border-radius: 8px !important;
-            z-index: 999999;
-            padding: 5px !important;
-        }
-        
-        button[data-testid="stSidebarCollapseButton"] svg {
-            fill: #FFFFFF !important;  /* 화살표는 흰색 */
-            color: #FFFFFF !important;
-            width: 30px !important;
-            height: 30px !important;
-        }
-        
-        /* 2. 전체 배경 및 텍스트 설정 */
-        .stApp {
-            background-color: #FFFFFF !important;
-        }
-        
-        /* 3. 일반 텍스트만 검정색으로 (화살표 버튼은 제외되도록 상세 지정) */
+        /* 전체 배경 및 기본 텍스트 검정 고정 */
+        .stApp { background-color: #FFFFFF !important; }
         .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
-        
-        [data-testid="stSidebar"] { 
-            background-color: #f8f9fa !important; 
-            border-right: 1px solid #e0e0e0;
-        }
 
-/* [핵심 해결] 사이드바 접힘/열림 화살표 버튼 시인성 강화 */
+        /* [핵심] 사이드바 화살표를 플로팅 버튼으로 변신 */
         button[data-testid="stSidebarCollapseButton"] {
-            background-color: #4285f4 !important; /* 버튼 배경을 파란색으로 */
-            color: white !important;               /* 글자색 흰색 */
-            border-radius: 50% !important;        /* 동그란 버튼 모양 */
-            width: 40px !important;
-            height: 40px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
-            left: 10px !important;
-            top: 10px !important;
-        }
-        button[data-testid="stSidebarCollapseButton"] svg {
-            fill: white !important;                /* 화살표 아이콘을 흰색으로 강제 */
-            width: 25px !important;
-            height: 25px !important;
-        }
-
-        /* 지표 및 텍스트 검정색 강제 */
-        .stApp, .stApp p, .stApp li, [data-testid="stMetricValue"] > div {
-            color: #000000 !important;
+            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
+            color: white !important;
+            border-radius: 50% !important;
+            width: 55px !important;
+            height: 55px !important;
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            z-index: 999999 !important;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
+            border: 2px solid #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         
-        /* 검색창(Iframe) 중앙 정렬 컨테이너 */
+        /* 화살표 아이콘 흰색 고정 */
+        button[data-testid="stSidebarCollapseButton"] svg {
+            fill: #FFFFFF !important;
+            width: 30px !important;
+            height: 30px !important;
+        }
+
+        /* 지표 카드 숫자 검정 강제 */
+        [data-testid="stMetricValue"] > div {
+            color: #000000 !important;
+            font-weight: 800 !important;
+        }
+
+        /* 검색창 중앙 정렬 */
         .search-container {
             display: flex;
             justify-content: center;
             padding: 0 20px;
         }
-        
-        /* 사이드바 모든 텍스트 강제 검정 */
-        [data-testid="stSidebar"] * {
-            color: #000000 !important; 
-            font-weight: 700 !important;
+
+        /* 사이드바 스타일 */
+        [data-testid="stSidebar"] { 
+            background-color: #f8f9fa !important; 
+            border-right: 1px solid #e0e0e0;
         }
+        [data-testid="stSidebar"] * { color: #000000 !important; }
         
-        /* 메뉴 선택 효과 */
-        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div {
-            background-color: #e8f0fe !important;
-            border-radius: 8px !important;
-        }
-        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div p {
-            color: #1a73e8 !important; 
-            font-weight: 800 !important;
-        }
-        
-        /* 카드 디자인 및 내부 글자색 강화 */
         .gs-card {
             background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px;
             padding: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
         }
-        .gs-card h3, .gs-card p, .gs-card b {
-            color: #000000 !important;
-        }
-        .persona-tag {
-            display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px;
-        }
-        .stMarkdown li, .stMarkdown p { color: #000000 !important; }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
@@ -321,6 +312,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
