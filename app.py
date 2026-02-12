@@ -43,7 +43,10 @@ def get_db_connection():
 # 4. 강력한 CSS 주입 (글자색 검정 고정 및 카드 디자인)
 st.markdown("""
     <style>
-        .stApp { background-color: #ffffff !important; }
+        /* 모든 텍스트 강제 검정색 */
+        .stApp, .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
+            color: #000000 !important;
+        }
         
         /* 화살표 아이콘 강제 고정 (색상 및 위치) */
         button[data-testid="stSidebarCollapseButton"] {
@@ -280,6 +283,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
