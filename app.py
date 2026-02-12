@@ -43,7 +43,12 @@ def get_db_connection():
 # 4. 강력한 CSS 주입 (글자색 검정 고정 및 카드 디자인)
 st.markdown("""
     <style>
-        /* 모든 텍스트 강제 검정색 */
+        /* 1. 전체 배경을 흰색으로 설정 */
+        .stApp {
+            background-color: #FFFFFF;
+        }
+        
+        /* 2. 모든 텍스트 요소를 검정색으로 설정 */
         .stApp, .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
