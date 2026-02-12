@@ -45,11 +45,6 @@ st.markdown("""
     <style>
         .stApp { background-color: #ffffff !important; }
         
-        /* 모든 텍스트 및 지표(Metric) 검정색 강제 */
-        .stApp, .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
-            color: #000000 !important;
-        }
-        
         /* 지표 카드 숫자 및 라벨 가독성 보장 */
         [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
         [data-testid="stMetricLabel"] > div > p { color: #333333 !important; font-weight: 600 !important; }
@@ -265,3 +260,4 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
