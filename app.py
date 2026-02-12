@@ -16,6 +16,32 @@ st.set_page_config(
     initial_sidebar_state=st.session_state.sidebar_state
 )
 
+# 2. [강력 해결] 본문 클릭 시 사이드바 자동 닫기 JavaScript
+components.html("""
+    <script>
+    const doc = window.parent.document;
+    
+    const handleSideBar = () => {
+        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+        const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
+        
+        if (sidebar && closeButton) {
+            // 사이드바가 확장된 상태인지 확인 (getBoundingClientRect 활용)
+            const isExpanded = sidebar.getBoundingClientRect().width > 0;
+            if (isExpanded) {
+                closeButton.click();
+            }
+        }
+    };
+
+    // 본문 클릭 시 무조건 실행되도록 캡처링 모드(true)로 설정
+    const mainContent = doc.querySelector('.main');
+    if (mainContent) {
+        mainContent.addEventListener('click', handleSideBar, true);
+    }
+    </script>
+""", height=0)
+
 # 3. DB 연결 설정 (비밀번호는 본인의 것으로 수정하세요)
 db_user = "root"
 db_pass = "your_password" 
@@ -72,12 +98,17 @@ st.markdown("""
             padding: 0 20px;
         }
 
-        /* 사이드바 스타일 최적화 */
+        /* 사이드바 스타일 및 메뉴 효과 */
         [data-testid="stSidebar"] { 
             background-color: #f8f9fa !important; 
             border-right: 1px solid #e0e0e0;
         }
         [data-testid="stSidebar"] * { color: #000000 !important; }
+        
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div {
+            background-color: #e8f0fe !important;
+            border-radius: 8px !important;
+        }
         
         /* 카드 디자인 */
         .gs-card {
@@ -274,6 +305,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
