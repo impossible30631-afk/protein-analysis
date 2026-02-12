@@ -43,11 +43,7 @@ def get_db_connection():
 # 4. 강력한 CSS 주입 (글자색 검정 고정 및 카드 디자인)
 st.markdown("""
     <style>
-        /* 1. 전체 배경을 흰색으로 설정 */
-        .stApp {
-            background-color: #FFFFFF;
-        }
-        
+ 
         /* 1. 사이드바 화살표 설정 (먼저 정의) */
         button[data-testid="stSidebarCollapseButton"] {
             background: linear-gradient(to right, #FFD700, #FF4500) !important; /* ReBorn 그라데이션 */
@@ -296,6 +292,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
