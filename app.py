@@ -4,18 +4,6 @@ import numpy as np
 import streamlit.components.v1 as components
 from sqlalchemy import create_engine
 
-화살표가 보이지 않는 문제와 본문 클릭 시 사이드바가 닫히지 않는 문제를 완전히 해결하기 위해 가장 강력한 JavaScript 트리거와 UI 고정 CSS를 결합한 최종 코드를 제시해 드립니다.
-
-이 코드는 화살표를 ReBorn 테마 색상의 플로팅 버튼으로 만들어 시인성을 극대화했고, 본문 클릭 이벤트를 강제로 캡처하여 사이드바를 닫아줍니다.
-
-🚀 ReBorn 플랫폼 최종 통합 코드
-Python
-import streamlit as st
-import pandas as pd
-import numpy as np
-import streamlit.components.v1 as components
-from sqlalchemy import create_engine
-
 # 1. 세션 상태 초기화 및 페이지 설정
 if 'sidebar_state' not in st.session_state:
     st.session_state.sidebar_state = "expanded"
@@ -286,6 +274,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
