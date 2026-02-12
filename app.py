@@ -112,7 +112,27 @@ def content_layout(title, subtitle):
 # --- 메뉴별 화면 구현 ---
 if menu == "🏠 프로틴 제품 검색":
     content_layout("프로틴 제품 검색", "최적의 제품을 찾기 위한 AI 검색 엔진입니다.")
-    components.iframe("https://www.genspark.ai/api/code_sandbox_light/preview/8d73fd93-0037-4011-be71-2ec88dda37cc/product-search.html", height=850, scrolling=True)
+# [수정] 검색 화면 크기 조정 (너비 80%, 높이 700px) 및 중앙 정렬
+    st.markdown("""
+        <style>
+            .search-container {
+                display: flex;
+                justify-content: center;
+                padding: 0 40px;
+            }
+            iframe {
+                border-radius: 15px;
+                border: 1px solid #e0e0e0;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div class='search-container'>", unsafe_allow_html=True)
+    genspark_url = "https://www.genspark.ai/api/code_sandbox_light/preview/8d73fd93-0037-4011-be71-2ec88dda37cc/product-search.html"
+    # 너비(width)를 90% 정도로 줄여서 양옆에 여백을 줌
+    components.iframe(genspark_url, width=1000, height=700, scrolling=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 elif menu == "🚀 실시간 리뷰 엔진":
     content_layout("실시간 리뷰 엔진", "DB에서 직접 불러온 실시간 데이터 현황입니다.")
@@ -280,5 +300,4 @@ components.html(f"""
         }}
     </script>
 """, height=0)
-
 
