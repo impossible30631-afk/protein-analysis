@@ -55,12 +55,12 @@ st.markdown("""
         
         /* 화살표 아이콘 강제 고정 (색상 및 위치) */
         button[data-testid="stSidebarCollapseButton"] {
-            color: #000000 !important;
+            color: #FFFFFF !important;
             background-color: transparent !important;
             z-index: 999999;
         }
         button[data-testid="stSidebarCollapseButton"] svg {
-            fill: #000000 !important;
+            fill: #FFFFFF !important;
             width: 30px !important;
             height: 30px !important;
         }
@@ -288,6 +288,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
