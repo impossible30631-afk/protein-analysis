@@ -19,27 +19,22 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 3. 모든 스타일 통합 (진짜 버튼을 숨기되 '클릭'은 가능하게 설정)
+# 2. 스타일 통합 (배경 연회색 + 원조 화살표 완전 투명화)
 st.markdown("""
     <style>
-        /* [1] 배경 및 텍스트 설정 */
+        /* 배경 및 기본 텍스트 설정 */
         .stApp { background-color: #F8F9FA !important; }
         .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
 
-        /* [2] ★수정★ 진짜 화살표를 '보이지 않게만' 처리 (공간은 차지하게 함) */
+        /* [핵심] 원조 화살표 버튼을 투명하게 만들어 클릭 가능하게 놔둠 */
         button[data-testid="stSidebarCollapseButton"] {
             opacity: 0 !important;
-            width: 0px !important;
-            height: 0px !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            position: absolute !important;
-            overflow: hidden !important;
+            z-index: 1 !important;
         }
 
-        /* [3] 커스텀 메뉴 버튼 디자인 */
+        /* 커스텀 오렌지 버튼 디자인 (이미지 0b2cd8 스타일 반영) */
         #custom-menu-button {
             position: fixed;
             top: 80px; 
@@ -55,7 +50,6 @@ st.markdown("""
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
             border: 2px solid white;
-            transition: transform 0.1s active;
         }
         
         #custom-menu-button::before {
@@ -64,22 +58,16 @@ st.markdown("""
             font-size: 24px;
             font-weight: bold;
         }
-
-        /* 사이드바 스타일 */
-        [data-testid="stSidebar"] {
-            background-color: #F0F2F6 !important;
-            border-right: 1px solid #E0E0E0;
-        }
     </style>
 """, unsafe_allow_html=True)
 
-# 4. JavaScript: 진짜 버튼을 강제로 클릭하는 로직 강화
+# 3. JavaScript: 커스텀 버튼과 진짜 화살표 강제 연결
 components.html("""
     <script>
     const doc = window.parent.document;
 
-    function setupCustomButton() {
-        // 1. 커스텀 버튼 생성 (이미 있으면 생략)
+    function connectButtons() {
+        // 커스텀 버튼 생성
         let customBtn = doc.getElementById('custom-menu-button');
         if (!customBtn) {
             customBtn = document.createElement('div');
@@ -87,37 +75,17 @@ components.html("""
             doc.body.appendChild(customBtn);
         }
 
-        // 2. ★강력해진 클릭 로직★
-        customBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // 모든 가능한 경로로 진짜 버튼 탐색
+        // 클릭 시 진짜 버튼 클릭 전달
+        customBtn.onclick = function() {
             const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-            
-            if (realBtn) {
-                // 직접 클릭 이벤트 발생
-                realBtn.click();
-            } else {
-                // 버튼을 못 찾을 경우를 대비해 사이드바 자체 제어 시도 (fallback)
-                console.log("Streamlit의 진짜 버튼을 찾는 중...");
-            }
+            if (realBtn) realBtn.click();
         };
+    }
 
-        // 3. 본문 클릭 시 자동 닫기
-        const mainSection = doc.querySelector('.main');
-        if (mainSection && !mainSection.dataset.listenerAdded) {
-            mainSection.addEventListener('click', function(e) {
-                // 커스텀 버튼 자체를 누를 때는 닫히지 않게 보호
-                if (e.target.id === 'custom-menu-button') return;
-                
-                const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-                if (sidebar && sidebar.getBoundingClientRect().width > 0) {
-                    const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-                    if (realBtn) realBtn.click();
-                }
-            }, true);
-            mainSection.dataset.listenerAdded = "true";
+    // 1초마다 연결 상태 확인 (무조건 작동하게 함)
+    setInterval(connectButtons, 1000);
+    </script>
+""", height=0)
 
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
@@ -306,6 +274,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
