@@ -28,34 +28,7 @@ st.set_page_config(
     initial_sidebar_state=st.session_state.sidebar_state
 )
 
-# 2. [강력 해결] 본문 클릭 시 사이드바 자동 닫기 JavaScript (더 강력한 트리거)
-components.html("""
-    <script>
-    const doc = window.parent.document;
-    
-    // 본문 클릭 시 사이드바 닫기 로직
-    const handleSideBar = () => {
-        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-        const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        
-        if (sidebar && closeButton) {
-            // 사이드바 너비가 0보다 크면 열려있는 상태로 간주
-            const isExpanded = sidebar.getBoundingClientRect().width > 0;
-            if (isExpanded) {
-                closeButton.click();
-            }
-        }
-    };
-
-    // main 영역 클릭 감지
-    const mainContent = doc.querySelector('.main');
-    if (mainContent) {
-        mainContent.addEventListener('click', handleSideBar, true);
-    }
-    </script>
-""", height=0)
-
-# 3. DB 연결 설정
+# 3. DB 연결 설정 (비밀번호는 본인의 것으로 수정하세요)
 db_user = "root"
 db_pass = "your_password" 
 db_name = "my-review-db"
@@ -64,7 +37,7 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 4. [강력 해결] 화살표 시인성(그라데이션 버튼) 및 텍스트 검정 고정 CSS
+# 4. [강력 해결] 화살표 버튼 시인성 강화 및 텍스트 검정 고정 CSS
 st.markdown("""
     <style>
         /* 전체 배경 및 기본 텍스트 검정 고정 */
@@ -73,7 +46,7 @@ st.markdown("""
             color: #000000 !important;
         }
 
-        /* [핵심] 사이드바 화살표를 플로팅 버튼으로 변신 */
+        /* [핵심] 사이드바 화살표를 ReBorn 그라데이션 버튼으로 변신 */
         button[data-testid="stSidebarCollapseButton"] {
             background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
             color: white !important;
@@ -104,20 +77,21 @@ st.markdown("""
             font-weight: 800 !important;
         }
 
-        /* 검색창 중앙 정렬 */
+        /* 검색창 중앙 정렬 컨테이너 */
         .search-container {
             display: flex;
             justify-content: center;
             padding: 0 20px;
         }
 
-        /* 사이드바 스타일 */
+        /* 사이드바 스타일 최적화 */
         [data-testid="stSidebar"] { 
             background-color: #f8f9fa !important; 
             border-right: 1px solid #e0e0e0;
         }
         [data-testid="stSidebar"] * { color: #000000 !important; }
         
+        /* 카드 디자인 */
         .gs-card {
             background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px;
             padding: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
@@ -312,6 +286,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
