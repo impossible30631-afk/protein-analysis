@@ -48,21 +48,29 @@ st.markdown("""
             background-color: #FFFFFF;
         }
         
-        /* 2. 모든 텍스트 요소를 검정색으로 설정 */
-        .stApp, .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
-            color: #000000 !important;
+        /* 1. 사이드바 화살표 설정 (먼저 정의) */
+        button[data-testid="stSidebarCollapseButton"] {
+            background: linear-gradient(to right, #FFD700, #FF4500) !important; /* ReBorn 그라데이션 */
+            border-radius: 8px !important;
+            z-index: 999999;
+            padding: 5px !important;
         }
         
-        /* 화살표 아이콘 강제 고정 (색상 및 위치) */
-        button[data-testid="stSidebarCollapseButton"] {
-            color: #FFFFFF !important;
-            background-color: transparent !important;
-            z-index: 999999;
-        }
         button[data-testid="stSidebarCollapseButton"] svg {
-            fill: #FFFFFF !important;
+            fill: #FFFFFF !important;  /* 화살표는 흰색 */
+            color: #FFFFFF !important;
             width: 30px !important;
             height: 30px !important;
+        }
+        
+        /* 2. 전체 배경 및 텍스트 설정 */
+        .stApp {
+            background-color: #FFFFFF !important;
+        }
+        
+        /* 3. 일반 텍스트만 검정색으로 (화살표 버튼은 제외되도록 상세 지정) */
+        .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
+            color: #000000 !important;
         }
         
         [data-testid="stSidebar"] { 
@@ -288,6 +296,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
