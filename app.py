@@ -4,49 +4,50 @@ import numpy as np
 import streamlit.components.v1 as components
 from sqlalchemy import create_engine
 
+앗, 색상이 갑자기 변해서 당황하셨죠! 원인은 CSS 코드 내의 '충돌'과 '우선순위' 때문입니다.
+
+현재 코드에 st.markdown이 두 번 들어가면서, 첫 번째 설정한 검정색 텍스트 설정을 **두 번째 설정(사이드바 스타일 등)**이 덮어쓰거나, Streamlit 기본 테마와 충돌하면서 글자색이 흐릿해지거나 배경색이 꼬였을 가능성이 높습니다.
+
+모든 디자인 설정을 단 하나의 스타일 시트로 통합하고, 어떤 상황에서도 **"배경은 흰색, 글자는 검정색, 버튼은 그라데이션"**이 유지되도록 수정한 '진짜 최종의 최종' 본입니다.
+
+기존 코드를 싹 비우고 이걸로 갈아 끼워 보세요.
+
+🛠️ 디자인 완벽 고정 + DB 연동 통합 코드
+Python
+import streamlit as st
+import streamlit.components.v1 as components
+import pandas as pd
+from sqlalchemy import create_engine
+
 # 1. 페이지 설정 및 세션 초기화
 if 'menu_index' not in st.session_state:
     st.session_state.menu_index = 0
 
 st.set_page_config(page_title="Protein AI Platform", layout="wide")
 
-# 2. [DB 설정] - 본인의 정보로 수정하세요
+# 2. DB 설정 (본인의 정보로 유지)
 db_user = "root"
-db_pass = "your_password"  # 실제 비밀번호 입력
+db_pass = "your_password" 
 db_name = "my-review-db"
 db_host = "34.64.195.191"
 
-@st.cache_resource # 매번 연결하지 않도록 캐싱
+@st.cache_resource
 def get_db_connection():
-    engine = create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
-    return engine
+    return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 2. 본문 클릭 시 사이드바 닫기 (강력한 JS 트리거)
-components.html("""
-    <script>
-    const doc = window.parent.document;
-    const handleSideBar = () => {
-        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-        const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        if (sidebar && closeButton) {
-            // 사이드바 너비가 0보다 크면 열려있는 상태로 간주
-            const isExpanded = sidebar.getBoundingClientRect().width > 0;
-            if (isExpanded) {
-                closeButton.click();
-            }
-        }
-    };
-    const mainContent = doc.querySelector('.main');
-    if (mainContent) {
-        mainContent.addEventListener('click', handleSideBar, true);
-    }
-    </script>
-""", height=0)
-
-# 3. 모든 스타일 통합 (중복 제거 및 버튼 위치 최적화)
+# 3. 모든 스타일 하나로 통합 (색상 꼬임 방지)
 st.markdown("""
     <style>
-        /* [1] 화살표 버튼: ReBorn 그라데이션 + 위치 강제 고정 */
+        /* [전체 배경 및 텍스트 강제 고정] */
+        .stApp {
+            background-color: #FFFFFF !important;
+        }
+        /* 모든 일반 텍스트, 제목, 라벨을 검정색으로 강제 */
+        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3, .stMarkdown div p {
+            color: #000000 !important;
+        }
+
+        /* [사이드바 화살표 버튼] ReBorn 그라데이션 */
         button[data-testid="stSidebarCollapseButton"] {
             background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
             border-radius: 50% !important;
@@ -58,37 +59,49 @@ st.markdown("""
             z-index: 999999 !important;
             box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
             border: 2px solid white !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
         }
-
-        /* 화살표 아이콘 흰색 */
         button[data-testid="stSidebarCollapseButton"] svg {
             fill: white !important;
             width: 30px !important;
             height: 30px !important;
         }
 
-        /* [2] 텍스트 및 배경 설정 */
-        .stApp { background-color: #FFFFFF !important; }
-        .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
+        /* [사이드바 내부 스타일] */
+        [data-testid="stSidebar"] {
+            background-color: #f8f9fa !important;
+            border-right: 1px solid #e0e0e0;
+        }
+        [data-testid="stSidebar"] * {
             color: #000000 !important;
         }
-        
-        /* [3] 사이드바 내부 텍스트 검정 고정 */
-        [data-testid="stSidebar"] * { color: #000000 !important; }
 
-        /* [4] 검색창 중앙 정렬 */
-        .search-container { display: flex; justify-content: center; margin-top: 20px; }
-        
-        /* [5] 지표 숫자 강조 */
+        /* [지표/카드 스타일] */
         [data-testid="stMetricValue"] > div {
             color: #000000 !important;
             font-weight: 800 !important;
         }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
     </style>
-""", unsafe_allow_html=True) 
+""", unsafe_allow_html=True)
+
+# 4. 본문 클릭 시 사이드바 닫기 (강력한 JS)
+components.html("""
+    <script>
+    const doc = window.parent.document;
+    const mainContent = doc.querySelector('.main');
+    mainContent.addEventListener('click', function() {
+        const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+        const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
+        if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
+            closeButton.click();
+        }
+    }, true);
+    </script>
+""", height=0)
 
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
@@ -277,6 +290,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
