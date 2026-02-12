@@ -73,6 +73,35 @@ st.markdown("""
             background-color: #f8f9fa !important; 
             border-right: 1px solid #e0e0e0;
         }
+
+/* [핵심 해결] 사이드바 접힘/열림 화살표 버튼 시인성 강화 */
+        button[data-testid="stSidebarCollapseButton"] {
+            background-color: #4285f4 !important; /* 버튼 배경을 파란색으로 */
+            color: white !important;               /* 글자색 흰색 */
+            border-radius: 50% !important;        /* 동그란 버튼 모양 */
+            width: 40px !important;
+            height: 40px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+            left: 10px !important;
+            top: 10px !important;
+        }
+        button[data-testid="stSidebarCollapseButton"] svg {
+            fill: white !important;                /* 화살표 아이콘을 흰색으로 강제 */
+            width: 25px !important;
+            height: 25px !important;
+        }
+
+        /* 지표 및 텍스트 검정색 강제 */
+        .stApp, .stApp p, .stApp li, [data-testid="stMetricValue"] > div {
+            color: #000000 !important;
+        }
+        
+        /* 검색창(Iframe) 중앙 정렬 컨테이너 */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+        }
         
         /* 사이드바 모든 텍스트 강제 검정 */
         [data-testid="stSidebar"] * {
@@ -292,6 +321,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
