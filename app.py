@@ -19,73 +19,56 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 2. 스타일 통합 (배경 연회색 + 원조 화살표 완전 투명화)
+# 2. 진짜 버튼 개조 스타일 (기존 스타일/JS 모두 삭제 후 이것만 넣으셔도 됩니다)
 st.markdown("""
     <style>
-        /* 배경 및 기본 텍스트 설정 */
+        /* [1] 배경 및 기본 텍스트 설정 */
         .stApp { background-color: #F8F9FA !important; }
         .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
 
-        /* [핵심] 원조 화살표 버튼을 투명하게 만들어 클릭 가능하게 놔둠 */
+        /* [2] 진짜 화살표 버튼을 오렌지 네모 메뉴로 대개조 */
         button[data-testid="stSidebarCollapseButton"] {
-            opacity: 0 !important;
-            z-index: 1 !important;
+            /* 위치 및 크기 설정 */
+            position: fixed !important;
+            top: 80px !important; /* 검은 바 아래로 강제 이동 */
+            left: 20px !important;
+            width: 55px !important;
+            height: 55px !important;
+            
+            /* 오렌지 그라데이션 디자인 */
+            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
+            border-radius: 12px !important;
+            border: 2px solid white !important;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
+            
+            /* 투명도 복구 및 노출 강제 */
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 9999999 !important;
         }
 
-        /* 커스텀 오렌지 버튼 디자인 (이미지 0b2cd8 스타일 반영) */
-        #custom-menu-button {
-            position: fixed;
-            top: 80px; 
-            left: 20px;
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999999;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
-            border: 2px solid white;
+        /* [3] 버튼 안의 기존 화살표 아이콘은 가리고 '☰' 모양 넣기 */
+        button[data-testid="stSidebarCollapseButton"] svg {
+            display: none !important; /* 기존 화살표 제거 */
         }
         
-        #custom-menu-button::before {
-            content: '☰'; 
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
+        button[data-testid="stSidebarCollapseButton"]::after {
+            content: '☰'; /* 햄버거 메뉴 아이콘 */
+            color: white !important;
+            font-size: 26px !important;
+            font-weight: bold !important;
+            display: block !important;
+        }
+
+        /* [4] 사이드바 내부 스타일 */
+        [data-testid="stSidebar"] {
+            background-color: #F0F2F6 !important;
+            border-right: 1px solid #E0E0E0;
         }
     </style>
 """, unsafe_allow_html=True)
-
-# 3. JavaScript: 커스텀 버튼과 진짜 화살표 강제 연결
-components.html("""
-    <script>
-    const doc = window.parent.document;
-
-    function connectButtons() {
-        // 커스텀 버튼 생성
-        let customBtn = doc.getElementById('custom-menu-button');
-        if (!customBtn) {
-            customBtn = document.createElement('div');
-            customBtn.id = 'custom-menu-button';
-            doc.body.appendChild(customBtn);
-        }
-
-        // 클릭 시 진짜 버튼 클릭 전달
-        customBtn.onclick = function() {
-            const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-            if (realBtn) realBtn.click();
-        };
-    }
-
-    // 1초마다 연결 상태 확인 (무조건 작동하게 함)
-    setInterval(connectButtons, 1000);
-    </script>
-""", height=0)
 
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
@@ -274,6 +257,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
