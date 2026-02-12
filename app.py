@@ -2,19 +2,17 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import streamlit.components.v1 as components
-import sqlalchemy
 from sqlalchemy import create_engine
 
-# 1. 세션 상태 초기화 (사이드바 상태와 메뉴 인덱스 관리)
+# 1. 세션 상태 초기화 및 페이지 설정 (최상단에 위치해야 함)
 if 'sidebar_state' not in st.session_state:
     st.session_state.sidebar_state = "expanded"
 if 'menu_index' not in st.session_state:
     st.session_state.menu_index = 0
 
-st.set_page_config(page_title="Protein AI Platform", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Protein AI Platform", layout="wide", initial_sidebar_state=st.session_state.sidebar_state)
 
-# 2. 본문 클릭 시 사이드바 닫기 JavaScript 주입
-# 이 스크립트는 본문 영역을 클릭하면 사이드바 닫기 버튼을 자동으로 찾아 클릭합니다.
+# 2. 본문 클릭 시 사이드바 닫기 JavaScript
 components.html("""
     <script>
     const doc = window.parent.document;
@@ -23,22 +21,14 @@ components.html("""
         const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
         if (closeButton) {
             const sidebar = doc.querySelector('[data-testid="stSidebar"]');
-            // 사이드바가 화면에 보이는 상태(expanded)일 때만 클릭하여 닫음
             const isVisible = window.getComputedStyle(sidebar).getPropertyValue('left') === '0px';
-            if (isExpanded) {
+            if (isVisible) {
                 closeButton.click();
             }
         }
     });
     </script>
 """, height=0)
-
-# 2. 페이지 설정
-st.set_page_config(
-    page_title="Protein AI Platform", 
-    layout="wide", 
-    initial_sidebar_state=st.session_state.sidebar_state
-)
 
 # 3. DB 연결 정보 및 함수
 db_user = "root"
@@ -50,39 +40,23 @@ def get_db_connection():
     engine = create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
     return engine
 
-# 4. 메뉴 이동 함수 (클릭 시 사이드바 접힘 상태로 변경)
-def move_menu(target_index):
-    st.session_state.menu_index = target_index
-    st.session_state.sidebar_state = "collapsed"  # 버튼 클릭 시 접힘으로 변경
-    st.rerun()
-
-# 5. 강력한 CSS 주입 (화살표 시인성 및 카드 디자인)
+# 4. 강력한 CSS 주입 (글자색 검정 고정 및 카드 디자인)
 st.markdown("""
     <style>
         .stApp { background-color: #ffffff !important; }
         
-        /* 화살표 아이콘 강제 고정 (색상 및 위치) */
-        button[data-testid="stSidebarCollapseButton"] {
+        /* 모든 텍스트 및 지표(Metric) 검정색 강제 */
+        .stApp, .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
-            background-color: transparent !important;
-            z-index: 999999;
-        }
-        button[data-testid="stSidebarCollapseButton"] svg {
-            fill: #000000 !important;
-            width: 30px !important;
-            height: 30px !important;
         }
         
-        [data-testid="stSidebar"] { 
-            background-color: #f8f9fa !important; 
-            border-right: 1px solid #e0e0e0;
-        }
-        
-        /* 사이드바 모든 텍스트 강제 검정 */
-        [data-testid="stSidebar"] * {
-            color: #000000 !important; 
-            font-weight: 700 !important;
-        }
+        /* 지표 카드 숫자 및 라벨 가독성 보장 */
+        [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
+        [data-testid="stMetricLabel"] > div > p { color: #333333 !important; font-weight: 600 !important; }
+
+        /* 사이드바 스타일 */
+        [data-testid="stSidebar"] { background-color: #f8f9fa !important; border-right: 1px solid #e0e0e0; }
+        [data-testid="stSidebar"] * { color: #000000 !important; font-weight: 700 !important; }
         
         /* 메뉴 선택 효과 */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div {
@@ -91,97 +65,50 @@ st.markdown("""
         }
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div p {
             color: #1a73e8 !important; 
-            font-weight: 800 !important;
         }
-        
-        /* 카드 디자인 및 내부 글자색 강화 */
+
+        /* 카드 디자인 */
         .gs-card {
             background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px;
             padding: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
         }
-        .gs-card h3, .gs-card p, .gs-card b {
-            color: #000000 !important;
-        }
         .persona-tag {
             display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px;
         }
-        .stMarkdown li, .stMarkdown p { color: #000000 !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# 6. 사이드바 메뉴 구성
+# 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
 
 with st.sidebar:
     st.markdown("<br><h1 style='color: #4285f4; font-size: 26px; margin-bottom:0;'>Protein AI</h1>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 14px; font-weight:bold;'>Market Intelligent Platform</p>", unsafe_allow_html=True)
     st.write("---")
-    
-    menu = st.radio(
-        "NAVIGATION", 
-        menu_list,
-        index=st.session_state.menu_index,
-        key="nav_radio",
-        label_visibility="collapsed"
-    )
-    
-    # 사이드바에서 수동 클릭 시에도 인덱스 동기화
+    menu = st.radio("NAV", menu_list, index=st.session_state.menu_index, key="nav_radio", label_visibility="collapsed")
     st.session_state.menu_index = menu_list.index(menu)
-    
     st.write("---")
-    # st.markdown("### 🚦 System Status")
-    # st.caption("🔒 DB: 🟢 Connected")
-    # st.caption("🧠 AI: 🔵 Model Engine Active")
     st.caption("📅 Sync: 2026-02-12")
 
 # --- 공통 레이아웃 함수 ---
 def content_layout(title, subtitle):
-    st.markdown(f"<div style='padding: 20px 40px;'>", unsafe_allow_html=True)
-    st.markdown(f"<h1 style='color: #000000; font-weight: 800;'>{title}</h1>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color: #333333; font-size: 17px;'>{subtitle}</p>", unsafe_allow_html=True)
+    st.markdown(f"<div style='padding: 20px 40px;'><h1 style='font-weight: 800;'>{title}</h1><p style='font-size: 17px;'>{subtitle}</p></div>", unsafe_allow_html=True)
 
 # --- 메뉴별 화면 구현 ---
 if menu == "🏠 프로틴 제품 검색":
     content_layout("프로틴 제품 검색", "최적의 제품을 찾기 위한 AI 검색 엔진입니다.")
-    genspark_url = "https://www.genspark.ai/api/code_sandbox_light/preview/8d73fd93-0037-4011-be71-2ec88dda37cc/product-search.html"
-    components.iframe(genspark_url, height=850, scrolling=True)
-    
-    st.markdown("<div style='padding: 0 40px;'>", unsafe_allow_html=True)
-    # if st.button("🚀 실제 소비자 리뷰 확인하기", use_container_width=True):
-    #     move_menu(1)
-    st.markdown("</div>", unsafe_allow_html=True)
+    components.iframe("https://www.genspark.ai/api/code_sandbox_light/preview/8d73fd93-0037-4011-be71-2ec88dda37cc/product-search.html", height=850, scrolling=True)
 
 elif menu == "🚀 실시간 리뷰 엔진":
-    content_layout("실시간 리뷰 엔진", "데이터베이스에서 직접 불러온 실시간 데이터 현황입니다.")
+    content_layout("실시간 리뷰 엔진", "DB에서 직접 불러온 실시간 데이터 현황입니다.")
     try:
         engine = get_db_connection()
         df = pd.read_sql("SELECT * FROM reviews LIMIT 10", engine)
         st.success("✅ 실시간 DB 연결 성공")
         st.dataframe(df, use_container_width=True)
     except:
-        st.info("💡 (Sample Data) 미리 보기 데이터를 표시합니다.")
+        st.info("💡 샘플 데이터를 표시합니다.")
         st.dataframe(pd.DataFrame({"제품명": ["테이크핏 맥스"], "별점": [5], "리뷰": ["목넘김이 깔끔합니다."]}), use_container_width=True)
-    
-    st.markdown("<br><div style='padding: 0 40px;'>", unsafe_allow_html=True)
-    # if st.button("📊 시장 포지셔닝 분석 보기", use_container_width=True):
-    #     move_menu(2)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# elif menu == "📊 시장 포지셔닝 맵":
-#     content_layout("시장 포지셔닝 맵", "함량 및 품질 지수 기반 군집 분석 결과입니다.")
-#     st.markdown("""
-#     <div style='padding: 0 40px;'>
-#     * **Cluster 1 (Premium Elite):** 함량 0.81, 품질 0.78 이상의 최상위 그룹<br>
-#     * **Cluster 2 (Efficiency Focus):** 고단백·저당 밸런스의 실속 그룹<br>
-#     * **Cluster 3 (Market Standard):** 대중적인 데일리 제품군<br>
-#     * **Cluster 0 (Entry/Value):** 입문용 및 가벼운 일상 섭취용 그룹
-#     </div>
-#     """, unsafe_allow_html=True)
-    
-#     st.markdown("<br><div style='padding: 0 40px;'>", unsafe_allow_html=True)
-#     if st.button("👥 타겟 페르소나 확인하기", use_container_width=True):
-#         move_menu(3)
-#     st.markdown("</div>", unsafe_allow_html=True)
 
 elif menu == "👥 맞춤형 페르소나":
     content_layout("맞춤형 페르소나", "4가지 핵심 소비자 유형 리포트입니다.")
@@ -302,9 +229,39 @@ elif menu == "📈 핵심 개선 인사이트":
             <p style='color: #000000 !important;'><b>3. 마케팅:</b> '락토프리' 속성을 강조하여 유당불내증 타겟 신규 유입 유도.</p>
         </div>
         """, unsafe_allow_html=True)
-    
-    st.markdown("<br><div style='padding: 0 40px;'>", unsafe_allow_html=True)
-    # if st.button("🏠 처음으로 돌아가기 (사이드바 다시 열림)", use_container_width=True):
-    #     st.session_state.sidebar_state = "expanded"  # 홈으로 갈 땐 다시 열기
-    #     move_menu(0)
-    st.markdown("</div>", unsafe_allow_html=True)
+
+# 7. [핵심] 우측 하단 플로팅 챗봇 아이콘 및 팝업 UI
+# 주의: src의 localhost 주소는 배포 시 외부 접속 가능한 HTTPS 주소로 변경해야 합니다.
+components.html(f"""
+    <style>
+        #chat-icon {{
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background-color: #4285f4; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 9999; transition: all 0.3s;
+        }}
+        #chat-icon:hover {{ transform: scale(1.1); }}
+        #chat-popup {{
+            position: fixed; bottom: 90px; right: 20px; width: 380px; height: 580px;
+            background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.25);
+            display: none; z-index: 9999; overflow: hidden; border: 1px solid #e0e0e0;
+        }}
+        .show {{ display: block !important; }}
+    </style>
+    <div id="chat-icon" onclick="toggleChat()">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+        </svg>
+    </div>
+    <div id="chat-popup">
+        <iframe src="http://localhost/chatbot/3lNEVjwOvHdI3SqR" 
+                style="width: 100%; height: 100%; border: none;" 
+                allow="microphone"></iframe>
+    </div>
+    <script>
+        function toggleChat() {{
+            const popup = document.getElementById('chat-popup');
+            popup.classList.toggle('show');
+        }}
+    </script>
+""", height=0)
