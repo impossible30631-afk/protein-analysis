@@ -4,43 +4,59 @@ import numpy as np
 import streamlit.components.v1 as components
 from sqlalchemy import create_engine
 
-# 1. 세션 상태 초기화 및 페이지 설정
-if 'sidebar_state' not in st.session_state:
-    st.session_state.sidebar_state = "expanded"
+# [설정] 세션 및 페이지 설정 - 최상단 고정
 if 'menu_index' not in st.session_state:
     st.session_state.menu_index = 0
 
-st.set_page_config(
-    page_title="Protein AI Platform", 
-    layout="wide", 
-    initial_sidebar_state=st.session_state.sidebar_state
-)
+st.set_page_config(page_title="Protein AI Platform", layout="wide")
 
-# 2. [강력 해결] 본문 클릭 시 사이드바 자동 닫기 JavaScript
+# [해결 1] 본문 클릭 시 사이드바 닫기 (가장 확실한 JS)
 components.html("""
     <script>
     const doc = window.parent.document;
+    const mainContent = doc.querySelector('.main');
     
-    const handleSideBar = () => {
+    mainContent.addEventListener('click', function() {
         const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
         const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        
-        if (sidebar && closeButton) {
-            // 사이드바가 확장된 상태인지 확인 (getBoundingClientRect 활용)
-            const isExpanded = sidebar.getBoundingClientRect().width > 0;
-            if (isExpanded) {
-                closeButton.click();
-            }
+        if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
+            closeButton.click();
         }
-    };
-
-    // 본문 클릭 시 무조건 실행되도록 캡처링 모드(true)로 설정
-    const mainContent = doc.querySelector('.main');
-    if (mainContent) {
-        mainContent.addEventListener('click', handleSideBar, true);
-    }
+    }, true);
     </script>
 """, height=0)
+
+# [해결 2] 화살표 버튼 시인성 및 텍스트 강제 검정 CSS
+st.markdown("""
+    <style>
+        /* 화살표 버튼을 왼쪽 상단에 '황금색 그라데이션'으로 강제 노출 */
+        button[data-testid="stSidebarCollapseButton"] {
+            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
+            border-radius: 50% !important;
+            width: 55px !important;
+            height: 55px !important;
+            position: fixed !important;
+            top: 15px !important;
+            left: 15px !important;
+            z-index: 999999 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            border: 2px solid white !important;
+        }
+        button[data-testid="stSidebarCollapseButton"] svg {
+            fill: white !important;
+            width: 30px !important;
+            height: 30px !important;
+        }
+
+        /* 본문 및 지표 텍스트 검정색 강제 */
+        .stApp, .stApp p, .stApp h1, .stApp h2, .stApp h3, [data-testid="stMetricValue"] > div {
+            color: #000000 !important;
+        }
+        
+        /* 검색창 중앙 정렬 */
+        .search-container { display: flex; justify-content: center; }
+    </style>
+""", unsafe_allow_html=True)
 
 # 3. DB 연결 설정 (비밀번호는 본인의 것으로 수정하세요)
 db_user = "root"
@@ -305,6 +321,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
