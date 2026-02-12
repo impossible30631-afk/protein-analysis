@@ -19,56 +19,55 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 3. 모든 스타일 하나로 통합 (색상 꼬임 방지)
+# 3. 스타일 통합 및 화살표 버튼 강제 노출 (기존 #3 부분을 이 코드로 갈음하세요)
 st.markdown("""
     <style>
-        /* [전체 배경 및 텍스트 강제 고정] */
-        .stApp {
-            background-color: #FFFFFF !important;
-        }
-        /* 모든 일반 텍스트, 제목, 라벨을 검정색으로 강제 */
-        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3, .stMarkdown div p {
-            color: #000000 !important;
-        }
-
-        /* [사이드바 화살표 버튼] ReBorn 그라데이션 */
+        /* 1. 화살표 버튼: 배경색과 아이콘을 무조건 보이게 강제 고정 */
         button[data-testid="stSidebarCollapseButton"] {
             background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
-            border-radius: 50% !important;
-            width: 55px !important;
-            height: 55px !important;
+            border-radius: 12px !important; /* 원형보다 눈에 더 잘 띄는 둥근 사각 */
+            width: 60px !important;
+            height: 60px !important;
             position: fixed !important;
-            top: 15px !important;
-            left: 15px !important;
-            z-index: 999999 !important;
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
-            border: 2px solid white !important;
+            top: 20px !important;
+            left: 20px !important;
+            z-index: 9999999 !important; /* 최상단 레이어 */
+            box-shadow: 0 8px 20px rgba(255, 69, 0, 0.6) !important;
+            border: 3px solid #FFFFFF !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
+
+        /* 2. 내부 화살표 아이콘(SVG) 흰색으로 굵게 설정 */
         button[data-testid="stSidebarCollapseButton"] svg {
-            fill: white !important;
-            width: 30px !important;
-            height: 30px !important;
+            fill: #FFFFFF !important;
+            stroke: #FFFFFF !important;
+            stroke-width: 2.5 !important;
+            width: 35px !important;
+            height: 35px !important;
         }
 
-        /* [사이드바 내부 스타일] */
-        [data-testid="stSidebar"] {
-            background-color: #f8f9fa !important;
-            border-right: 1px solid #e0e0e0;
+        /* 3. 사이드바가 열렸을 때 화살표 버튼 위치 자동 이동 (충돌 방지) */
+        section[data-testid="stSidebar"][aria-expanded="true"] ~ .main button[data-testid="stSidebarCollapseButton"] {
+            left: 320px !important; 
+            transition: left 0.3s ease-in-out;
         }
-        [data-testid="stSidebar"] * {
+
+        /* 4. 전체 배경 및 글자색 검정 고정 */
+        .stApp { background-color: #FFFFFF !important; }
+        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
 
-        /* [지표/카드 스타일] */
-        [data-testid="stMetricValue"] > div {
-            color: #000000 !important;
-            font-weight: 800 !important;
-        }
-        .search-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
+        /* 5. 사이드바 내부 텍스트 검정 고정 */
+        [data-testid="stSidebar"] * { color: #000000 !important; }
+        
+        /* 6. 지표 및 검색창 스타일 */
+        [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
+        .search-container { display: flex; justify-content: center; margin-top: 20px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -273,6 +272,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
