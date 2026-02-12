@@ -131,7 +131,7 @@ if menu == "🏠 프로틴 제품 검색":
     st.markdown("<div class='search-container'>", unsafe_allow_html=True)
     genspark_url = "https://www.genspark.ai/api/code_sandbox_light/preview/8d73fd93-0037-4011-be71-2ec88dda37cc/product-search.html"
     # 너비(width)를 90% 정도로 줄여서 양옆에 여백을 줌
-    components.iframe(genspark_url, width=1000, height=700, scrolling=True)
+    components.iframe(genspark_url, width=1200, height=700, scrolling=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 elif menu == "🚀 실시간 리뷰 엔진":
@@ -300,4 +300,5 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
