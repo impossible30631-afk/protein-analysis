@@ -45,13 +45,28 @@ st.markdown("""
     <style>
         .stApp { background-color: #ffffff !important; }
         
-        /* 지표 카드 숫자 및 라벨 가독성 보장 */
-        [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
-        [data-testid="stMetricLabel"] > div > p { color: #333333 !important; font-weight: 600 !important; }
-
-        /* 사이드바 스타일 */
-        [data-testid="stSidebar"] { background-color: #f8f9fa !important; border-right: 1px solid #e0e0e0; }
-        [data-testid="stSidebar"] * { color: #000000 !important; font-weight: 700 !important; }
+        /* 화살표 아이콘 강제 고정 (색상 및 위치) */
+        button[data-testid="stSidebarCollapseButton"] {
+            color: #000000 !important;
+            background-color: transparent !important;
+            z-index: 999999;
+        }
+        button[data-testid="stSidebarCollapseButton"] svg {
+            fill: #000000 !important;
+            width: 30px !important;
+            height: 30px !important;
+        }
+        
+        [data-testid="stSidebar"] { 
+            background-color: #f8f9fa !important; 
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        /* 사이드바 모든 텍스트 강제 검정 */
+        [data-testid="stSidebar"] * {
+            color: #000000 !important; 
+            font-weight: 700 !important;
+        }
         
         /* 메뉴 선택 효과 */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div {
@@ -60,16 +75,21 @@ st.markdown("""
         }
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div p {
             color: #1a73e8 !important; 
+            font-weight: 800 !important;
         }
-
-        /* 카드 디자인 */
+        
+        /* 카드 디자인 및 내부 글자색 강화 */
         .gs-card {
             background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px;
             padding: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
         }
+        .gs-card h3, .gs-card p, .gs-card b {
+            color: #000000 !important;
+        }
         .persona-tag {
             display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 12px;
         }
+        .stMarkdown li, .stMarkdown p { color: #000000 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -260,4 +280,5 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
