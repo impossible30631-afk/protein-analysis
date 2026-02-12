@@ -19,49 +19,68 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 3. 스타일 통합 및 화살표 버튼 강제 노출 (이 코드로 싹 갈음하세요)
+# 3. 모든 스타일 통합 및 UI 고정 (연회색 배경 + 텍스트 검정)
 st.markdown("""
     <style>
-        /* [1] 화살표 버튼: 배경색, 위치, 크기 강제 고정 */
-        button[data-testid="stSidebarCollapseButton"] {
-            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
-            border-radius: 12px !important;
-            width: 60px !important;
-            height: 60px !important;
-            position: fixed !important;
-            top: 20px !important;
-            left: 20px !important;
-            z-index: 9999999 !important;
-            box-shadow: 0 8px 20px rgba(255, 69, 0, 0.6) !important;
-            border: 3px solid #FFFFFF !important;
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+        /* [1] 배경색을 흰색에 가까운 연회색으로 변경 및 텍스트 검정 고정 */
+        .stApp { 
+            background-color: #F8F9FA !important; /* 세련된 연회색 */
         }
-
-        /* [2] 화살표 아이콘: 흰색으로 아주 굵게 */
-        button[data-testid="stSidebarCollapseButton"] svg {
-            fill: #FFFFFF !important;
-            stroke: #FFFFFF !important;
-            stroke-width: 3 !important;
-            width: 35px !important;
-            height: 35px !important;
-        }
-
-        /* [3] 사이드바 열렸을 때 버튼 위치 (사이드바 안으로 숨지 못하게) */
-        [data-testid="stSidebar"][aria-expanded="true"] + .main button[data-testid="stSidebarCollapseButton"],
-        [data-testid="stSidebar"][aria-expanded="true"] ~ .main button[data-testid="stSidebarCollapseButton"] {
-            left: 320px !important;
-        }
-
-        /* [4] 전체 배경 및 글자색 강제 검정 (색상 꼬임 방지) */
-        .stApp { background-color: #FFFFFF !important; }
-        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3, .stMarkdown p {
+        
+        /* 모든 일반 텍스트, 제목, 라벨을 검정색으로 강제 */
+        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
 
-        /* [5] 사이드바 내부 텍스트 검정 고정 */
+        /* [2] 기존 화살표 버튼은 숨김 */
+        button[data-testid="stSidebarCollapseButton"] {
+            display: none !important;
+        }
+
+        /* [3] 커스텀 메뉴 버튼 (연회색 배경에서도 잘 보이도록 그림자 유지) */
+        #custom-menu-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999999;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
+            border: 2px solid #FFFFFF;
+        }
+        
+        #custom-menu-button::before {
+            content: '▶'; 
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* [4] 사이드바 스타일 (본문보다 살짝 더 짙은 회색으로 구분) */
+        [data-testid="stSidebar"] {
+            background-color: #F0F2F6 !important;
+            border-right: 1px solid #E0E0E0;
+        }
         [data-testid="stSidebar"] * { color: #000000 !important; }
+
+        /* [5] 지표 카드 및 기타 요소 */
+        [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
+        .search-container { display: flex; justify-content: center; margin-top: 20px; }
+        
+        /* 카드형 디자인 배경은 완전 흰색으로 해서 배경(연회색)과 대비 효과 */
+        .gs-card {
+            background: #FFFFFF !important;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -290,6 +309,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
