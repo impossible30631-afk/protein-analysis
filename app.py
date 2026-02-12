@@ -19,57 +19,74 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 3. 스타일 통합 및 화살표 버튼 강제 노출 (기존 #3 부분을 이 코드로 갈음하세요)
+# 3. 스타일 통합 및 화살표 버튼 강제 노출 (이 코드로 싹 갈음하세요)
 st.markdown("""
     <style>
-        /* 1. 화살표 버튼: 배경색과 아이콘을 무조건 보이게 강제 고정 */
+        /* [1] 화살표 버튼: 배경색, 위치, 크기 강제 고정 */
         button[data-testid="stSidebarCollapseButton"] {
             background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
-            border-radius: 12px !important; /* 원형보다 눈에 더 잘 띄는 둥근 사각 */
+            border-radius: 12px !important;
             width: 60px !important;
             height: 60px !important;
             position: fixed !important;
             top: 20px !important;
             left: 20px !important;
-            z-index: 9999999 !important; /* 최상단 레이어 */
+            z-index: 9999999 !important;
             box-shadow: 0 8px 20px rgba(255, 69, 0, 0.6) !important;
             border: 3px solid #FFFFFF !important;
             display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
             visibility: visible !important;
             opacity: 1 !important;
         }
 
-        /* 2. 내부 화살표 아이콘(SVG) 흰색으로 굵게 설정 */
+        /* [2] 화살표 아이콘: 흰색으로 아주 굵게 */
         button[data-testid="stSidebarCollapseButton"] svg {
             fill: #FFFFFF !important;
             stroke: #FFFFFF !important;
-            stroke-width: 2.5 !important;
+            stroke-width: 3 !important;
             width: 35px !important;
             height: 35px !important;
         }
 
-        /* 3. 사이드바가 열렸을 때 화살표 버튼 위치 자동 이동 (충돌 방지) */
-        section[data-testid="stSidebar"][aria-expanded="true"] ~ .main button[data-testid="stSidebarCollapseButton"] {
-            left: 320px !important; 
-            transition: left 0.3s ease-in-out;
+        /* [3] 사이드바 열렸을 때 버튼 위치 (사이드바 안으로 숨지 못하게) */
+        [data-testid="stSidebar"][aria-expanded="true"] + .main button[data-testid="stSidebarCollapseButton"],
+        [data-testid="stSidebar"][aria-expanded="true"] ~ .main button[data-testid="stSidebarCollapseButton"] {
+            left: 320px !important;
         }
 
-        /* 4. 전체 배경 및 글자색 검정 고정 */
+        /* [4] 전체 배경 및 글자색 강제 검정 (색상 꼬임 방지) */
         .stApp { background-color: #FFFFFF !important; }
-        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3 {
+        .stApp p, .stApp span, .stApp label, .stApp li, .stApp h1, .stApp h2, .stApp h3, .stMarkdown p {
             color: #000000 !important;
         }
 
-        /* 5. 사이드바 내부 텍스트 검정 고정 */
+        /* [5] 사이드바 내부 텍스트 검정 고정 */
         [data-testid="stSidebar"] * { color: #000000 !important; }
-        
-        /* 6. 지표 및 검색창 스타일 */
-        [data-testid="stMetricValue"] > div { color: #000000 !important; font-weight: 800 !important; }
-        .search-container { display: flex; justify-content: center; margin-top: 20px; }
     </style>
 """, unsafe_allow_html=True)
+
+# 4. [추가] JavaScript를 이용한 버튼 강제 보정 (CSS가 안 먹힐 때를 대비)
+components.html("""
+    <script>
+    const doc = window.parent.document;
+    
+    // 0.5초마다 버튼 상태를 체크해서 강제로 스타일을 입힘 (질기게 따라다님)
+    setInterval(() => {
+        const btn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
+        if (btn) {
+            btn.style.visibility = 'visible';
+            btn.style.opacity = '1';
+            btn.style.display = 'flex';
+            
+            const svg = btn.querySelector('svg');
+            if (svg) {
+                svg.style.fill = 'white';
+                svg.style.stroke = 'white';
+            }
+        }
+    }, 500);
+    </script>
+""", height=0)
 
 # 4. 본문 클릭 시 사이드바 닫기 (강력한 JS)
 components.html("""
@@ -85,6 +102,7 @@ components.html("""
     }, true);
     </script>
 """, height=0)
+
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
 
@@ -272,6 +290,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
