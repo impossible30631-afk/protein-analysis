@@ -1,20 +1,4 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import streamlit.components.v1 as components
-from sqlalchemy import create_engine
-
-앗, 색상이 갑자기 변해서 당황하셨죠! 원인은 CSS 코드 내의 '충돌'과 '우선순위' 때문입니다.
-
-현재 코드에 st.markdown이 두 번 들어가면서, 첫 번째 설정한 검정색 텍스트 설정을 **두 번째 설정(사이드바 스타일 등)**이 덮어쓰거나, Streamlit 기본 테마와 충돌하면서 글자색이 흐릿해지거나 배경색이 꼬였을 가능성이 높습니다.
-
-모든 디자인 설정을 단 하나의 스타일 시트로 통합하고, 어떤 상황에서도 **"배경은 흰색, 글자는 검정색, 버튼은 그라데이션"**이 유지되도록 수정한 '진짜 최종의 최종' 본입니다.
-
-기존 코드를 싹 비우고 이걸로 갈아 끼워 보세요.
-
-🛠️ 디자인 완벽 고정 + DB 연동 통합 코드
-Python
-import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 from sqlalchemy import create_engine
@@ -102,7 +86,6 @@ components.html("""
     }, true);
     </script>
 """, height=0)
-
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
 
@@ -290,6 +273,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
