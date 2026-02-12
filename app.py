@@ -19,7 +19,7 @@ db_host = "34.64.195.191"
 def get_db_connection():
     return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
 
-# 3. 모든 스타일 통합 (기존 화살표 제거 및 커스텀 버튼 최적화)
+# 3. 모든 스타일 통합 (진짜 버튼을 숨기되 '클릭'은 가능하게 설정)
 st.markdown("""
     <style>
         /* [1] 배경 및 텍스트 설정 */
@@ -28,19 +28,21 @@ st.markdown("""
             color: #000000 !important;
         }
 
-        /* [2] ★중요★ 기존 검은색 바의 화살표 버튼을 완전히 소멸시킴 */
-        header[data-testid="stHeader"] button, 
+        /* [2] ★수정★ 진짜 화살표를 '보이지 않게만' 처리 (공간은 차지하게 함) */
         button[data-testid="stSidebarCollapseButton"] {
-            display: none !important;
-            visibility: hidden !important;
             opacity: 0 !important;
-            pointer-events: none !important;
+            width: 0px !important;
+            height: 0px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            position: absolute !important;
+            overflow: hidden !important;
         }
 
         /* [3] 커스텀 메뉴 버튼 디자인 */
         #custom-menu-button {
             position: fixed;
-            top: 80px; /* 검은색 바 아래 */
+            top: 80px; 
             left: 20px;
             width: 55px;
             height: 55px;
@@ -53,6 +55,7 @@ st.markdown("""
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4);
             border: 2px solid white;
+            transition: transform 0.1s active;
         }
         
         #custom-menu-button::before {
@@ -70,13 +73,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 4. JavaScript: 커스텀 버튼이 진짜 화살표를 '대리 클릭' 하도록 설정
+# 4. JavaScript: 진짜 버튼을 강제로 클릭하는 로직 강화
 components.html("""
     <script>
     const doc = window.parent.document;
 
     function setupCustomButton() {
-        // 1. 커스텀 버튼 생성
+        // 1. 커스텀 버튼 생성 (이미 있으면 생략)
         let customBtn = doc.getElementById('custom-menu-button');
         if (!customBtn) {
             customBtn = document.createElement('div');
@@ -84,22 +87,30 @@ components.html("""
             doc.body.appendChild(customBtn);
         }
 
-        // 2. ★핵심★ 커스텀 버튼 클릭 시 진짜 화살표를 찾아 클릭해줌
+        // 2. ★강력해진 클릭 로직★
         customBtn.onclick = function(e) {
+            e.preventDefault();
             e.stopPropagation();
-            // 스트림릿의 진짜 화살표 버튼은 헤더나 사이드바 내부에 숨어있음
+            
+            // 모든 가능한 경로로 진짜 버튼 탐색
             const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
+            
             if (realBtn) {
+                // 직접 클릭 이벤트 발생
                 realBtn.click();
             } else {
-                console.log("진짜 버튼을 찾는 중...");
+                // 버튼을 못 찾을 경우를 대비해 사이드바 자체 제어 시도 (fallback)
+                console.log("Streamlit의 진짜 버튼을 찾는 중...");
             }
         };
 
-        // 3. 본문 클릭 시 사이드바 자동 닫기 (기능 강화)
+        // 3. 본문 클릭 시 자동 닫기
         const mainSection = doc.querySelector('.main');
         if (mainSection && !mainSection.dataset.listenerAdded) {
-            mainSection.addEventListener('click', function() {
+            mainSection.addEventListener('click', function(e) {
+                // 커스텀 버튼 자체를 누를 때는 닫히지 않게 보호
+                if (e.target.id === 'custom-menu-button') return;
+                
                 const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
                 if (sidebar && sidebar.getBoundingClientRect().width > 0) {
                     const realBtn = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
@@ -107,15 +118,6 @@ components.html("""
                 }
             }, true);
             mainSection.dataset.listenerAdded = "true";
-        }
-    }
-
-    // 초기 실행 및 페이지 변화 감지 (스트림릿 리런 대응)
-    setupCustomButton();
-    const observer = new MutationObserver(setupCustomButton);
-    observer.observe(doc.body, { childList: true, subtree: true });
-    </script>
-""", height=0)
 
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
@@ -304,6 +306,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
