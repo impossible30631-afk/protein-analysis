@@ -4,32 +4,49 @@ import numpy as np
 import streamlit.components.v1 as components
 from sqlalchemy import create_engine
 
-# [설정] 세션 및 페이지 설정 - 최상단 고정
+# 1. 페이지 설정 및 세션 초기화
 if 'menu_index' not in st.session_state:
     st.session_state.menu_index = 0
 
 st.set_page_config(page_title="Protein AI Platform", layout="wide")
 
-# [해결 1] 본문 클릭 시 사이드바 닫기 (가장 확실한 JS)
+# 2. [DB 설정] - 본인의 정보로 수정하세요
+db_user = "root"
+db_pass = "your_password"  # 실제 비밀번호 입력
+db_name = "my-review-db"
+db_host = "34.64.195.191"
+
+@st.cache_resource # 매번 연결하지 않도록 캐싱
+def get_db_connection():
+    engine = create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
+    return engine
+
+# 2. 본문 클릭 시 사이드바 닫기 (강력한 JS 트리거)
 components.html("""
     <script>
     const doc = window.parent.document;
-    const mainContent = doc.querySelector('.main');
-    
-    mainContent.addEventListener('click', function() {
+    const handleSideBar = () => {
         const sidebar = doc.querySelector('section[data-testid="stSidebar"]');
         const closeButton = doc.querySelector('button[data-testid="stSidebarCollapseButton"]');
-        if (sidebar && sidebar.getAttribute('aria-expanded') === 'true') {
-            closeButton.click();
+        if (sidebar && closeButton) {
+            // 사이드바 너비가 0보다 크면 열려있는 상태로 간주
+            const isExpanded = sidebar.getBoundingClientRect().width > 0;
+            if (isExpanded) {
+                closeButton.click();
+            }
         }
-    }, true);
+    };
+    const mainContent = doc.querySelector('.main');
+    if (mainContent) {
+        mainContent.addEventListener('click', handleSideBar, true);
+    }
     </script>
 """, height=0)
 
-# [해결 2] 화살표 버튼 시인성 및 텍스트 강제 검정 CSS
+# 3. 모든 스타일 통합 (중복 제거 및 버튼 위치 최적화)
 st.markdown("""
     <style>
-        /* 화살표 버튼을 왼쪽 상단에 '황금색 그라데이션'으로 강제 노출 */
+        /* [1] 화살표 버튼: ReBorn 그라데이션 + 위치 강제 고정 */
         button[data-testid="stSidebarCollapseButton"] {
             background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
             border-radius: 50% !important;
@@ -39,100 +56,39 @@ st.markdown("""
             top: 15px !important;
             left: 15px !important;
             z-index: 999999 !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
             border: 2px solid white !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
+
+        /* 화살표 아이콘 흰색 */
         button[data-testid="stSidebarCollapseButton"] svg {
             fill: white !important;
             width: 30px !important;
             height: 30px !important;
         }
 
-        /* 본문 및 지표 텍스트 검정색 강제 */
-        .stApp, .stApp p, .stApp h1, .stApp h2, .stApp h3, [data-testid="stMetricValue"] > div {
-            color: #000000 !important;
-        }
-        
-        /* 검색창 중앙 정렬 */
-        .search-container { display: flex; justify-content: center; }
-    </style>
-""", unsafe_allow_html=True)
-
-# 3. DB 연결 설정 (비밀번호는 본인의 것으로 수정하세요)
-db_user = "root"
-db_pass = "your_password" 
-db_name = "my-review-db"
-db_host = "34.64.195.191"
-
-def get_db_connection():
-    return create_engine(f"mysql+pymysql://{db_user}:{db_pass}@{db_host}/{db_name}")
-
-# 4. [강력 해결] 화살표 버튼 시인성 강화 및 텍스트 검정 고정 CSS
-st.markdown("""
-    <style>
-        /* 전체 배경 및 기본 텍스트 검정 고정 */
+        /* [2] 텍스트 및 배경 설정 */
         .stApp { background-color: #FFFFFF !important; }
         .stApp p, .stApp li, .stApp span, .stApp label, .stApp h1, .stApp h2, .stApp h3 {
             color: #000000 !important;
         }
-
-        /* [핵심] 사이드바 화살표를 ReBorn 그라데이션 버튼으로 변신 */
-        button[data-testid="stSidebarCollapseButton"] {
-            background: linear-gradient(135deg, #FFD700 0%, #FF4500 100%) !important;
-            color: white !important;
-            border-radius: 50% !important;
-            width: 55px !important;
-            height: 55px !important;
-            position: fixed !important;
-            top: 20px !important;
-            left: 20px !important;
-            z-index: 999999 !important;
-            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.4) !important;
-            border: 2px solid #FFFFFF !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
         
-        /* 화살표 아이콘 흰색 고정 */
-        button[data-testid="stSidebarCollapseButton"] svg {
-            fill: #FFFFFF !important;
-            width: 30px !important;
-            height: 30px !important;
-        }
+        /* [3] 사이드바 내부 텍스트 검정 고정 */
+        [data-testid="stSidebar"] * { color: #000000 !important; }
 
-        /* 지표 카드 숫자 검정 강제 */
+        /* [4] 검색창 중앙 정렬 */
+        .search-container { display: flex; justify-content: center; margin-top: 20px; }
+        
+        /* [5] 지표 숫자 강조 */
         [data-testid="stMetricValue"] > div {
             color: #000000 !important;
             font-weight: 800 !important;
         }
-
-        /* 검색창 중앙 정렬 컨테이너 */
-        .search-container {
-            display: flex;
-            justify-content: center;
-            padding: 0 20px;
-        }
-
-        /* 사이드바 스타일 및 메뉴 효과 */
-        [data-testid="stSidebar"] { 
-            background-color: #f8f9fa !important; 
-            border-right: 1px solid #e0e0e0;
-        }
-        [data-testid="stSidebar"] * { color: #000000 !important; }
-        
-        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] input:checked + div {
-            background-color: #e8f0fe !important;
-            border-radius: 8px !important;
-        }
-        
-        /* 카드 디자인 */
-        .gs-card {
-            background: #ffffff; border: 1px solid #e0e0e0; border-radius: 12px;
-            padding: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); margin-bottom: 20px;
-        }
     </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True) 
 
 # 5. 사이드바 메뉴 구성
 menu_list = ["🏠 프로틴 제품 검색", "🚀 실시간 리뷰 엔진", "👥 맞춤형 페르소나", "📈 핵심 개선 인사이트"]
@@ -321,6 +277,7 @@ components.html(f"""
         }}
     </script>
 """, height=0)
+
 
 
 
